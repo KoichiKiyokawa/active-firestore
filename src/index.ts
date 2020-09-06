@@ -50,6 +50,10 @@ export class Base<T extends object> {
     return this.documentReference.update(data);
   }
 
+  static async find<T extends object>(...ids: string[]) {
+    return new Base<T>(...ids).get()
+  }
+
   static async findAll<T>(...ids: string[]) {
     const docRef =
       this.parentModel === null
