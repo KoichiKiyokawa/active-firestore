@@ -35,7 +35,9 @@ export class Base<T extends object> {
   static path(...ids: string[]): string {
     const [parentIds, thisModelId] = splitIds(ids);
     const parentPath =
-      parentIds === null ? "" : this.parentModel!.path(...parentIds);
+      parentIds === null || this.parentModel === null
+        ? ""
+        : this.parentModel.path(...parentIds);
     return `${parentPath}/${this.collectionName}/${thisModelId}`;
   }
 
