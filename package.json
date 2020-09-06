@@ -1,0 +1,24 @@
+{
+  "name": "active-firestore",
+  "version": "0.0.1",
+  "description": "Firestore sdk which has ActiveRecord like syntax",
+  "main": "dist/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/KoichiKiyokawa/active-firestore.git"
+  },
+  "author": "K.Kiyokawa",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/KoichiKiyokawa/active-firestore/issues"
+  },
+  "peerDependencies": {
+    "firebase": "^7.16.0"
+  },
+  "devDependencies": {
+    "typescript": "3.9.6"
+  }
+}
