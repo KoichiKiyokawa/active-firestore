@@ -7,13 +7,13 @@ const splitOthersAndLast = (ids: string[]): [string[], string | undefined] => {
 }
 
 export class Base<T extends Record<string, unknown>> {
-  collectionName = '';
-  parent: typeof Base | null = null;
-  childModel: typeof Base | null = null;
-  db!: firestore.Firestore;
+  collectionName = ''
+  parent: typeof Base | null = null
+  childModel: typeof Base | null = null
+  db!: firestore.Firestore
 
-  collectionReference: firestore.CollectionReference<T> | null;
-  documentReference: firestore.DocumentReference<T> | null;
+  collectionReference: firestore.CollectionReference<T> | null
+  documentReference: firestore.DocumentReference<T> | null
 
   private getParentDocumentReference(
     parentIdsOrThisId: string[] | string,
@@ -31,10 +31,10 @@ export class Base<T extends Record<string, unknown>> {
     } else if (parentIdsOrThisId.length === 1) {
       // e.g. new Post([userId], postId)
       return new this.parent(parentIdsOrThisId).documentReference
-    } else if(Array.isArray(parentIdsOrThisId)) {
+    } else if (Array.isArray(parentIdsOrThisId)) {
       // e.g. new Comment([userId, postId], commentId)
       const [grandParentIds, parentId] = splitOthersAndLast(parentIdsOrThisId)
-      return new this.parent( grandParentIds, parentId ).documentReference
+      return new this.parent(grandParentIds, parentId).documentReference
     }
 
     return null
@@ -43,25 +43,26 @@ export class Base<T extends Record<string, unknown>> {
   constructor(parentIdsOrThisId: string[] | string, id?: string) {
     if (parentIdsOrThisId.length === 0) throw Error('Invalid initialization!')
 
-    const parentDocumentRef = this.getParentDocumentReference( parentIdsOrThisId, id )
+    const parentDocumentRef = this.getParentDocumentReference(parentIdsOrThisId, id)
     if (parentDocumentRef === null) {
       this.collectionReference = null
       this.documentReference = null
       return
     }
 
-    this.collectionReference = parentDocumentRef.collection(this.collectionName ) as firestore.CollectionReference<T>
-    this.documentReference = id !== undefined
-      ? this.collectionReference.doc(id)
-      : typeof parentIdsOrThisId === 'string'
+    this.collectionReference = parentDocumentRef.collection(this.collectionName) as firestore.CollectionReference<T>
+    this.documentReference =
+      id !== undefined
+        ? this.collectionReference.doc(id)
+        : typeof parentIdsOrThisId === 'string'
         ? this.collectionReference.doc(parentIdsOrThisId)
         : null
-
   }
 
   async add(data: T): Promise<string> {
     if (this.collectionReference === null) {
-      if (this.parent === null) throw Error(`You should assign db propety.
+      if (this.parent === null)
+        throw Error(`You should assign db propety.
       For example,
       firebase.initializeApp(...)
       const firestore = firebase.firestore()
@@ -76,11 +77,8 @@ export class Base<T extends Record<string, unknown>> {
     return addedDocumentReference.id
   }
 
-  async get(): Promise<T & { id: string } | {id:string}> {
-    if (this.documentReference === null)
-      throw Error(
-        'This model does not have documentReference. Did you mean? getAll'
-      )
+  async get(): Promise<(T & { id: string }) | { id: string }> {
+    if (this.documentReference === null) throw Error('This model does not have documentReference. Did you mean? getAll')
 
     const snapshot = await this.documentReference.get()
     return { ...snapshot.data(), id: snapshot.id }
@@ -94,15 +92,13 @@ export class Base<T extends Record<string, unknown>> {
   }
 
   async update(data: Partial<T>): Promise<void> {
-    if (this.documentReference === null)
-      throw Error('This model does not have documentReference.')
+    if (this.documentReference === null) throw Error('This model does not have documentReference.')
 
     return this.documentReference.update(data)
   }
 
   async delete(): Promise<void> {
-    if (this.documentReference === null)
-      throw Error('This model does not have documentReference.')
+    if (this.documentReference === null) throw Error('This model does not have documentReference.')
 
     return this.documentReference.delete()
   }
