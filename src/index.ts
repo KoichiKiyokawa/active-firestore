@@ -1,4 +1,11 @@
 import { firestore } from "firebase/app";
+
+const splitOthersAndLast = (ids: string[]): [string[], string | undefined] => {
+  const id = ids.pop();
+  const others = ids;
+  return [others, id];
+};
+
 export class Base<T extends object> {
   collectionName: string = "";
   parent: typeof Base | null = null;
@@ -9,16 +16,32 @@ export class Base<T extends object> {
   documentReference: firestore.DocumentReference<T> | null;
 
   constructor(parentIdsOrThisId: string[] | string, id?: string) {
-    if (typeof parentIdsOrThisId === "string" && id)
-      throw Error("Invalid initialization!");
+    if (parentIdsOrThisId.length === 0) throw Error("Invalid initialization!");
 
-    const parentDocumentReference =
-      typeof parentIdsOrThisId === "string"
-        ? this.db
-        : new this.parent!(parentIdsOrThisId, id).documentReference!;
-    this.collectionReference = parentDocumentReference.collection(
-      this.collectionName
-    ) as firestore.CollectionReference<T>;
+    if (typeof parentIdsOrThisId === "string" && id === undefined) {
+      // e.g. new User(userId)
+      this.collectionReference = this.db.collection(
+        this.collectionName
+      ) as firestore.CollectionReference<T>;
+    } else if (typeof parentIdsOrThisId === "string") {
+      // e.g. new Post(userId, postId)
+      const parentId = parentIdsOrThisId;
+      this.collectionReference = new this.parent!(
+        [parentId],
+        id
+      ).documentReference!.collection(
+        this.collectionName
+      ) as firestore.CollectionReference<T>;
+    } else {
+      // e.g. new Comment([userId, postId], commentId)
+      const [grandParentIds, parentId] = splitOthersAndLast(parentIdsOrThisId);
+      this.collectionReference = new this.parent!(
+        grandParentIds,
+        parentId
+      ).documentReference!.collection(
+        this.collectionName
+      ) as firestore.CollectionReference<T>;
+    }
 
     if (id) {
       this.documentReference = this.collectionReference.doc(
