@@ -19,6 +19,7 @@
     "firebase": "^7.16.0"
   },
   "devDependencies": {
-    "typescript": "3.9.6"
+    "firebase": "^7.16.0",
+    "typescript": "^4.0.2"
   }
 }
