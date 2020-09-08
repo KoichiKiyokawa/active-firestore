@@ -1,9 +1,9 @@
 import { firestore } from 'firebase/app'
 
 const splitOthersAndLast = (ids: string[]): [string[], string | undefined] => {
-  const id = ids.pop()
+  const last = ids.pop()
   const others = ids
-  return [others, id]
+  return [others, last]
 }
 
 export class Base<T extends Record<string, unknown>> {
