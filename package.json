@@ -4,6 +4,7 @@
   "description": "Firestore sdk which has ActiveRecord like syntax",
   "main": "dist/index.js",
   "scripts": {
+    "lint": "eslint --fix --ext .ts src",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -19,6 +20,9 @@
     "firebase": "^7.16.0"
   },
   "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^4.1.0",
+    "@typescript-eslint/parser": "^4.1.0",
+    "eslint": "^7.8.1",
     "firebase": "^7.16.0",
     "typescript": "^4.0.2"
   }

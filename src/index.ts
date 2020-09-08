@@ -1,91 +1,109 @@
-import { firestore } from "firebase/app";
+import { firestore } from 'firebase/app'
 
 const splitOthersAndLast = (ids: string[]): [string[], string | undefined] => {
-  const id = ids.pop();
-  const others = ids;
-  return [others, id];
-};
+  const id = ids.pop()
+  const others = ids
+  return [others, id]
+}
 
-export class Base<T extends object> {
-  collectionName: string = "";
+export class Base<T extends Record<string, unknown>> {
+  collectionName = '';
   parent: typeof Base | null = null;
   childModel: typeof Base | null = null;
   db!: firestore.Firestore;
 
-  collectionReference: firestore.CollectionReference<T>;
+  collectionReference: firestore.CollectionReference<T> | null;
   documentReference: firestore.DocumentReference<T> | null;
 
-  constructor(parentIdsOrThisId: string[] | string, id?: string) {
-    if (parentIdsOrThisId.length === 0) throw Error("Invalid initialization!");
-
-    if (typeof parentIdsOrThisId === "string" && id === undefined) {
+  private getParentDocumentReference(
+    parentIdsOrThisId: string[] | string,
+    id?: string
+  ): firestore.Firestore | firestore.DocumentReference | null {
+    if (typeof parentIdsOrThisId === 'string' && id === undefined) {
       // e.g. new User(userId)
-      this.collectionReference = this.db.collection(
-        this.collectionName
-      ) as firestore.CollectionReference<T>;
-    } else if (typeof parentIdsOrThisId === "string") {
+      return this.db
+    }
+    if (this.parent === null) throw Error('parent does not assigned')
+
+    if (typeof parentIdsOrThisId === 'string' && id !== undefined) {
       // e.g. new Post(userId, postId)
-      const parentId = parentIdsOrThisId;
-      this.collectionReference = new this.parent!(
-        [parentId],
-        id
-      ).documentReference!.collection(
-        this.collectionName
-      ) as firestore.CollectionReference<T>;
-    } else {
+      return new this.parent([parentIdsOrThisId], id).documentReference
+    } else if (parentIdsOrThisId.length === 1) {
+      // e.g. new Post([userId], postId)
+      return new this.parent(parentIdsOrThisId).documentReference
+    } else if(Array.isArray(parentIdsOrThisId)) {
       // e.g. new Comment([userId, postId], commentId)
-      const [grandParentIds, parentId] = splitOthersAndLast(parentIdsOrThisId);
-      this.collectionReference = new this.parent!(
-        grandParentIds,
-        parentId
-      ).documentReference!.collection(
-        this.collectionName
-      ) as firestore.CollectionReference<T>;
+      const [grandParentIds, parentId] = splitOthersAndLast(parentIdsOrThisId)
+      return new this.parent( grandParentIds, parentId ).documentReference
     }
 
-    if (id) {
-      this.documentReference = this.collectionReference.doc(
-        id
-      ) as firestore.DocumentReference<T>;
-    } else if (typeof parentIdsOrThisId === "string") {
-      // e.g. new Base('id')
-      this.documentReference = this.collectionReference.doc(parentIdsOrThisId);
-    } else {
-      this.documentReference = null;
+    return null
+  }
+
+  constructor(parentIdsOrThisId: string[] | string, id?: string) {
+    if (parentIdsOrThisId.length === 0) throw Error('Invalid initialization!')
+
+    const parentDocumentRef = this.getParentDocumentReference( parentIdsOrThisId, id )
+    if (parentDocumentRef === null) {
+      this.collectionReference = null
+      this.documentReference = null
+      return
     }
+
+    this.collectionReference = parentDocumentRef.collection(this.collectionName ) as firestore.CollectionReference<T>
+    this.documentReference = id !== undefined
+      ? this.collectionReference.doc(id)
+      : typeof parentIdsOrThisId === 'string'
+        ? this.collectionReference.doc(parentIdsOrThisId)
+        : null
+
   }
 
   async add(data: T): Promise<string> {
-    const addedDocumentReference = await this.collectionReference.add(data);
-    return addedDocumentReference.id;
+    if (this.collectionReference === null) {
+      if (this.parent === null) throw Error(`You should assign db propety.
+      For example,
+      firebase.initializeApp(...)
+      const firestore = firebase.firestore()
+      class Foo extends Base {
+        db = firestore
+      }
+      `)
+
+      throw Error('Parent model is not assigned')
+    }
+    const addedDocumentReference = await this.collectionReference.add(data)
+    return addedDocumentReference.id
   }
 
-  async get(): Promise<T & { id: string }> {
+  async get(): Promise<T & { id: string } | {id:string}> {
     if (this.documentReference === null)
       throw Error(
-        "This model does not have documentReference. Did you mean? getAll"
-      );
+        'This model does not have documentReference. Did you mean? getAll'
+      )
 
-    const snapshot = await this.documentReference.get();
-    return { ...snapshot.data()!, id: snapshot.id };
+    const snapshot = await this.documentReference.get()
+    return { ...snapshot.data(), id: snapshot.id }
   }
 
   async getAll(): Promise<(T & { id: string })[]> {
-    const snapshot = await this.collectionReference.get();
-    return snapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
+    if (this.collectionReference === null) throw Error()
+
+    const snapshot = await this.collectionReference.get()
+    return snapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id }))
   }
 
   async update(data: Partial<T>): Promise<void> {
     if (this.documentReference === null)
-      throw Error("This model does not have documentReference.");
+      throw Error('This model does not have documentReference.')
 
-    return this.documentReference.update(data);
+    return this.documentReference.update(data)
   }
 
   async delete(): Promise<void> {
     if (this.documentReference === null)
-      throw Error("This model does not have documentReference.");
+      throw Error('This model does not have documentReference.')
 
-    return this.documentReference.delete();
+    return this.documentReference.delete()
   }
 }
