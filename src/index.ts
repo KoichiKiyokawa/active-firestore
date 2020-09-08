@@ -47,7 +47,7 @@ export class Base<T extends object> {
     return { ...snapshot.data()!, id: snapshot.id };
   }
 
-  async getAll() {
+  async getAll(): Promise<(T & { id: string })[]> {
     const snapshot = await this.collectionReference.get();
     return snapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
   }
