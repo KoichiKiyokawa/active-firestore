@@ -6,7 +6,9 @@ firebase.initializeApp(firebaseConfig)
 export const _db = firebase.firestore()
 
 export class Application<T extends Record<string, unknown>> extends Base<T> {
-  get db(): typeof _db {
-    return _db
+  get baseProps(): typeof Base.prototype.props {
+    return {
+      db: _db,
+    }
   }
 }

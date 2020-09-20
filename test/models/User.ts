@@ -6,7 +6,9 @@ type TUser = {
 }
 
 export class User extends Application<TUser> {
-  get collectionName(): string {
-    return 'users'
+  get props(): typeof Application.prototype.props {
+    return {
+      collectionName: 'users',
+    }
   }
 }

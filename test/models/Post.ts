@@ -12,11 +12,10 @@ type TPost = {
  * const postData = await new Post(userId, postId).get()
  */
 export class Post extends Application<TPost> {
-  get collectionName(): string {
-    return 'posts'
-  }
-
-  get parent(): typeof User {
-    return User
+  get props(): typeof Application.prototype.props {
+    return {
+      collectionName: 'posts',
+      parent: User,
+    }
   }
 }
