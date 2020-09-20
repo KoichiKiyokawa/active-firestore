@@ -4,8 +4,7 @@
   "description": "Firestore sdk which has ActiveRecord like syntax",
   "main": "dist/index.js",
   "scripts": {
-    "lint": "eslint --fix --ext .ts src",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "lint": "eslint --fix --ext .ts src test",
   },
   "repository": {
     "type": "git",
