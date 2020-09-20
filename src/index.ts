@@ -7,59 +7,63 @@ const splitOthersAndLast = (ids: string[]): [string[], string | undefined] => {
 }
 
 type Data = Record<string, unknown>
+type BaseProps = {
+  collectionName?: string
+  parent?: new (parentIdsOrThisId: string[] | string, id?: string) => Base<Data>
+  db?: firestore.Firestore
+}
 
 export class Base<T extends Data> {
-  get collectionName(): string {
-    return ''
+  get baseProps(): BaseProps {
+    return {}
   }
-  get parent(): (new (parentIdsOrThisId: string[] | string, id?: string) => Base<Data>) | null {
-    return null
+  get props(): BaseProps {
+    return {}
   }
-  get db(): firestore.Firestore | null {
-    return null
+  get combinedProps(): BaseProps {
+    return { ...this.baseProps, ...this.props }
   }
 
   collectionReference: firestore.CollectionReference<T> | null
   documentReference: firestore.DocumentReference<T> | null
 
-  private getParentDocumentReference(
-    parentIdsOrThisId: string[] | string,
-    id?: string
-  ): firestore.Firestore | firestore.DocumentReference | null {
-    if (typeof parentIdsOrThisId === 'string' && id === undefined) {
-      // e.g. new User(userId)
-      if (this.db === null) throw Error('db does not assigned')
-
-      return this.db
-    }
-    if (this.parent === null) throw Error('parent does not assigned')
-
-    if (typeof parentIdsOrThisId === 'string' && id !== undefined) {
-      // e.g. new Post(userId, postId)
-      return new this.parent(parentIdsOrThisId).documentReference
-    } else if (parentIdsOrThisId.length === 1) {
-      // e.g. new Post([userId], postId)
-      return new this.parent(parentIdsOrThisId[0]).documentReference
-    } else if (Array.isArray(parentIdsOrThisId)) {
-      // e.g. new Comment([userId, postId], commentId)
-      const [grandParentIds, parentId] = splitOthersAndLast(parentIdsOrThisId)
-      return new this.parent(grandParentIds, parentId).documentReference
-    }
-
-    return null
-  }
-
   constructor(parentIdsOrThisId: string[] | string, id?: string) {
     if (parentIdsOrThisId.length === 0) throw Error('Invalid initialization!')
 
-    const parentDocumentRef = this.getParentDocumentReference(parentIdsOrThisId, id)
+    const parentDocumentRef = (() => {
+      if (typeof parentIdsOrThisId === 'string' && id === undefined) {
+        // e.g. new User(userId)
+        if (this.combinedProps.db === undefined) throw Error('db does not assigned')
+
+        return this.combinedProps.db
+      }
+      if (this.combinedProps.parent === undefined) throw Error('parent does not assigned')
+
+      if (typeof parentIdsOrThisId === 'string' && id !== undefined) {
+        // e.g. new Post(userId, postId)
+        return new this.combinedProps.parent(parentIdsOrThisId).documentReference
+      } else if (parentIdsOrThisId.length === 1) {
+        // e.g. new Post([userId], postId)
+        return new this.combinedProps.parent(parentIdsOrThisId[0]).documentReference
+      } else if (Array.isArray(parentIdsOrThisId)) {
+        // e.g. new Comment([userId, postId], commentId)
+        const [grandParentIds, parentId] = splitOthersAndLast(parentIdsOrThisId)
+        return new this.combinedProps.parent(grandParentIds, parentId).documentReference
+      }
+
+      return null
+    })()
+
     if (parentDocumentRef === null) {
       this.collectionReference = null
       this.documentReference = null
       return
     }
 
-    this.collectionReference = parentDocumentRef.collection(this.collectionName) as firestore.CollectionReference<T>
+    if (this.combinedProps.collectionName === undefined) throw Error('collectionName has not set')
+    this.collectionReference = parentDocumentRef.collection(
+      this.combinedProps.collectionName
+    ) as firestore.CollectionReference<T>
     this.documentReference =
       id !== undefined
         ? this.collectionReference.doc(id)
@@ -70,7 +74,7 @@ export class Base<T extends Data> {
 
   async add(data: T): Promise<string> {
     if (this.collectionReference === null) {
-      if (this.parent === null)
+      if (this.combinedProps.parent === null)
         throw Error(`You should assign db propety.
       For example,
       firebase.initializeApp(...)
