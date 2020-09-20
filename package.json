@@ -5,6 +5,7 @@
   "main": "dist/index.js",
   "scripts": {
     "lint": "eslint --fix --ext .ts src test",
+    "test": "jest --silent=false --verbose false"
   },
   "repository": {
     "type": "git",
