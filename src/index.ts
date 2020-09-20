@@ -7,10 +7,15 @@ const splitOthersAndLast = (ids: string[]): [string[], string | undefined] => {
 }
 
 export class Base<T extends Record<string, unknown>> {
-  collectionName = ''
-  parent: typeof Base | null = null
-  childModel: typeof Base | null = null
-  db!: firestore.Firestore
+  get collectionName(): string {
+    return ''
+  }
+  get parent(): typeof Base | null {
+    return null
+  }
+  get db(): firestore.Firestore | null {
+    return null
+  }
 
   collectionReference: firestore.CollectionReference<T> | null
   documentReference: firestore.DocumentReference<T> | null
@@ -21,6 +26,8 @@ export class Base<T extends Record<string, unknown>> {
   ): firestore.Firestore | firestore.DocumentReference | null {
     if (typeof parentIdsOrThisId === 'string' && id === undefined) {
       // e.g. new User(userId)
+      if (this.db === null) throw Error('db does not assigned')
+
       return this.db
     }
     if (this.parent === null) throw Error('parent does not assigned')
