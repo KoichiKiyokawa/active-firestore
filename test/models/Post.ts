@@ -1,4 +1,4 @@
-import { RootCollection } from './RootCollection'
+import { Application } from './Application'
 import { User } from './User'
 
 type TPost = {
@@ -7,7 +7,11 @@ type TPost = {
   body: string
 }
 
-export class Post extends RootCollection<TPost> {
+/**
+ * @example
+ * const postData = await new Post(userId, postId).get()
+ */
+export class Post extends Application<TPost> {
   get collectionName(): string {
     return 'posts'
   }

@@ -5,7 +5,7 @@ import { firebaseConfig } from '../../.env'
 firebase.initializeApp(firebaseConfig)
 export const _db = firebase.firestore()
 
-export class RootCollection<T extends Record<string, unknown>> extends Base<T> {
+export class Application<T extends Record<string, unknown>> extends Base<T> {
   get db(): typeof _db {
     return _db
   }

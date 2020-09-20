@@ -1,11 +1,11 @@
-import { RootCollection } from './RootCollection'
+import { Application } from './Application'
 
 type TUser = {
   id: string
   name: string
 }
 
-export class User extends RootCollection<TUser> {
+export class User extends Application<TUser> {
   get collectionName(): string {
     return 'users'
   }
