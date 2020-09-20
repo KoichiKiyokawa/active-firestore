@@ -6,11 +6,13 @@ const splitOthersAndLast = (ids: string[]): [string[], string | undefined] => {
   return [others, last]
 }
 
-export class Base<T extends Record<string, unknown>> {
+type Data = Record<string, unknown>
+
+export class Base<T extends Data> {
   get collectionName(): string {
     return ''
   }
-  get parent(): typeof Base | null {
+  get parent(): (new (parentIdsOrThisId: string[] | string, id?: string) => Base<Data>) | null {
     return null
   }
   get db(): firestore.Firestore | null {
