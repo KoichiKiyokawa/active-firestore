@@ -36,10 +36,10 @@ export class Base<T extends Data> {
 
     if (typeof parentIdsOrThisId === 'string' && id !== undefined) {
       // e.g. new Post(userId, postId)
-      return new this.parent([parentIdsOrThisId], id).documentReference
+      return new this.parent(parentIdsOrThisId).documentReference
     } else if (parentIdsOrThisId.length === 1) {
       // e.g. new Post([userId], postId)
-      return new this.parent(parentIdsOrThisId).documentReference
+      return new this.parent(parentIdsOrThisId[0]).documentReference
     } else if (Array.isArray(parentIdsOrThisId)) {
       // e.g. new Comment([userId, postId], commentId)
       const [grandParentIds, parentId] = splitOthersAndLast(parentIdsOrThisId)
