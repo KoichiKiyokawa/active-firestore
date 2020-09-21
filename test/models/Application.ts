@@ -1,4 +1,4 @@
-import { Base } from '../../src/index'
+import { Base } from '../../src/Base'
 import firebase from 'firebase'
 import { firebaseConfig } from '../../.env'
 
