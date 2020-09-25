@@ -22,10 +22,11 @@ describe('firestore test', () => {
     expect(user.documentReference?.path).toBe(`users/${userId}`)
   })
 
-  test('instantiate User', () => {
+  test('instantiate User (without id)', () => {
     const user = new User()
     expect(user.props.collectionName).toBe('users')
     expect(user.collectionReference?.path).toBe('users')
+    expect(user.documentReference).toBeNull()
   })
 
   test('User.prototype.get', async () => {
