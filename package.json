@@ -6,7 +6,7 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "lint": "eslint --fix --ext .ts src test",
-    "test": "firebase emulators:exec --only firestore 'jest --silent=false --verbose false'",
+    "test": "jest --silent=false --verbose false",
     "build": "tsc -d --outDir dist"
   },
   "repository": {
