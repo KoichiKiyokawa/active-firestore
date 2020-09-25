@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "description": "Firestore sdk which has ActiveRecord like syntax",
   "main": "dist/index.js",
-  "type": "dist/index.d.ts",
+  "types": "dist/index.d.ts",
   "scripts": {
     "lint": "eslint --fix --ext .ts src test",
     "test": "jest --silent=false --verbose false",
