@@ -1,5 +1,10 @@
 # active-firestore
 Firestore sdk which has ActiveRecord like syntax
 
-# Example
+## Example
 Please see `test/models`.
+
+## TODO
+- [ ] CI
+- [ ] doc(en)
+- [ ] doc(ja)
