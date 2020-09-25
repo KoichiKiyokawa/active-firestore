@@ -2,7 +2,6 @@ import { Application } from './Application'
 import { User } from './User'
 
 type TPost = {
-  id: string
   title: string
   body: string
 }

@@ -1,7 +1,6 @@
 import { Application } from './Application'
 
 type TUser = {
-  id: string
   name: string
 }
 
