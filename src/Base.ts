@@ -27,22 +27,23 @@ export class Base<T extends Data> {
   collectionReference: firestore.CollectionReference<T> | null
   documentReference: firestore.DocumentReference<T> | null
 
-  constructor(parentIdsOrThisId: string[] | string, id?: string) {
-    if (parentIdsOrThisId.length === 0) throw Error('Invalid initialization!')
+  constructor(parentIdsOrThisId?: string[] | string, id?: string) {
+    if (this.combinedProps.db === undefined) throw Error('db does not assigned')
 
     const parentDocumentRef = (() => {
-      if (typeof parentIdsOrThisId === 'string' && id === undefined) {
+      if (parentIdsOrThisId === undefined && this.combinedProps.parent === undefined) {
+        // e.g. new User()
+        return this.combinedProps.db
+      } else if (typeof parentIdsOrThisId === 'string' && id === undefined && this.combinedProps.parent === undefined) {
         // e.g. new User(userId)
-        if (this.combinedProps.db === undefined) throw Error('db does not assigned')
-
         return this.combinedProps.db
       }
       if (this.combinedProps.parent === undefined) throw Error('parent does not assigned')
 
       if (typeof parentIdsOrThisId === 'string' && id !== undefined) {
         // e.g. new Post(userId, postId)
-        return new this.combinedProps.parent(parentIdsOrThisId).documentReference
-      } else if (parentIdsOrThisId.length === 1) {
+        throw Error('invalid args')
+      } else if (parentIdsOrThisId?.length === 1) {
         // e.g. new Post([userId], postId)
         return new this.combinedProps.parent(parentIdsOrThisId[0]).documentReference
       } else if (Array.isArray(parentIdsOrThisId)) {
