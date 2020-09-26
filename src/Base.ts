@@ -1,19 +1,15 @@
 import { firestore } from 'firebase/app'
-
-const splitOthersAndLast = (ids: string[]): [string[], string | undefined] => {
-  const last = ids.pop()
-  const others = ids
-  return [others, last]
-}
+import { BaseCrud } from './BaseCrud'
+import { ERRORS } from './errors'
 
 type Data = Record<string, unknown>
 type BaseProps = {
   collectionName?: string
-  parent?: new (parentIdsOrThisId: string[] | string, id?: string) => Base<Data>
+  parent?: new (parentIdsOrThisId?: string | [string, ...string[]], id?: string) => Base<Data>
   db?: firestore.Firestore
 }
 
-export class Base<T extends Data> {
+export class Base<T extends Data> extends BaseCrud<T> {
   get baseProps(): BaseProps {
     return {}
   }
@@ -24,96 +20,62 @@ export class Base<T extends Data> {
     return { ...this.baseProps, ...this.props }
   }
 
-  collectionReference: firestore.CollectionReference<T> | null
-  documentReference: firestore.DocumentReference<T> | null
-
-  constructor(parentIdsOrThisId?: string[] | string, id?: string) {
+  constructor(parentIdsOrThisId?: string | [string, ...string[]], id?: string) {
+    super()
     if (this.combinedProps.db === undefined) throw Error('db does not assigned')
+    if (this.combinedProps.collectionName === undefined) throw Error('collectionName has not set')
 
-    const parentDocumentRef = (() => {
-      if (parentIdsOrThisId === undefined && this.combinedProps.parent === undefined) {
-        // e.g. new User()
-        return this.combinedProps.db
-      } else if (typeof parentIdsOrThisId === 'string' && id === undefined && this.combinedProps.parent === undefined) {
-        // e.g. new User(userId)
-        return this.combinedProps.db
-      }
-      if (this.combinedProps.parent === undefined) throw Error('parent does not assigned')
-
-      if (typeof parentIdsOrThisId === 'string' && id !== undefined) {
-        // e.g. new Post(userId, postId)
-        throw Error('invalid args')
-      } else if (parentIdsOrThisId?.length === 1) {
-        // e.g. new Post([userId], postId)
-        return new this.combinedProps.parent(parentIdsOrThisId[0]).documentReference
+    const parentDocumentRef: firestore.Firestore | firestore.DocumentReference<Data> | undefined = (() => {
+      /**
+       * parentIdsOrThisId: 3 patterns (undefined, string, [string, ...string[]])
+       *                         x
+       *       id         : 2 patterns (undefined, string)
+       *                         ||
+       *                    6 patterns
+       */
+      if (parentIdsOrThisId === undefined) {
+        if (id === undefined) {
+          // e.g. new User()
+          return this.combinedProps.db
+        } else if (typeof id === 'string') {
+          // e.g. new User(undefined, userId)
+          throw ERRORS.INVALID_ARGS()
+        }
+      } else if (typeof parentIdsOrThisId === 'string') {
+        if (id === undefined) {
+          // e.g. new User(userId)
+          return this.combinedProps.db
+        } else if (typeof id === 'string') {
+          // e.g. new Post(userId, postId)
+          throw ERRORS.INVALID_ARGS()
+        }
       } else if (Array.isArray(parentIdsOrThisId)) {
-        // e.g. new Comment([userId, postId], commentId)
-        const [grandParentIds, parentId] = splitOthersAndLast(parentIdsOrThisId)
-        return new this.combinedProps.parent(grandParentIds, parentId).documentReference
+        if (this.combinedProps.parent === undefined) throw ERRORS.NO_PARENT()
+        // e.g. 1 new Post([userId]) or new Post([userId], postId)
+        // or
+        // e.g. 2. new Comment([userId, postId]) or new Comment([userId, postId], commentId)
+        if (parentIdsOrThisId.length === 1) {
+          // e.g. 1 new Post([userId]) or new Post([userId], postId)
+          const [parentId] = parentIdsOrThisId
+          return new this.combinedProps.parent(parentId).documentReference
+        } else {
+          // e.g. 2 new Comment([userId, postId]) or new Comment([userId, postId], commentId)
+          const grandParentIds = parentIdsOrThisId.slice(0, parentIdsOrThisId.length - 1) as [string, ...string[]]
+          const parentId = parentIdsOrThisId[parentIdsOrThisId.length]
+          return new this.combinedProps.parent(grandParentIds, parentId).documentReference
+        }
       }
-
-      return null
     })()
 
-    if (parentDocumentRef === null) {
-      this.collectionReference = null
-      this.documentReference = null
-      return
-    }
-
-    if (this.combinedProps.collectionName === undefined) throw Error('collectionName has not set')
-    this.collectionReference = parentDocumentRef.collection(
+    this.collectionReference = parentDocumentRef?.collection(
       this.combinedProps.collectionName
     ) as firestore.CollectionReference<T>
+
     this.documentReference =
       id !== undefined
         ? this.collectionReference.doc(id)
         : typeof parentIdsOrThisId === 'string'
         ? this.collectionReference.doc(parentIdsOrThisId)
-        : null
-  }
-
-  async add(data: T): Promise<string> {
-    if (this.collectionReference === null) {
-      if (this.combinedProps.parent === null)
-        throw Error(`You should assign db propety.
-      For example,
-      firebase.initializeApp(...)
-      const firestore = firebase.firestore()
-      class Foo extends Base {
-        db = firestore
-      }
-      `)
-
-      throw Error('Parent model is not assigned')
-    }
-    const addedDocumentReference = await this.collectionReference.add(data)
-    return addedDocumentReference.id
-  }
-
-  async get(): Promise<(T & { id: string }) | { id: string }> {
-    if (this.documentReference === null) throw Error('This model does not have documentReference. Did you mean? getAll')
-
-    const snapshot = await this.documentReference.get()
-    return { ...snapshot.data(), id: snapshot.id }
-  }
-
-  async getAll(): Promise<(T & { id: string })[]> {
-    if (this.collectionReference === null) throw Error()
-
-    const snapshot = await this.collectionReference.get()
-    return snapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id }))
-  }
-
-  async update(data: Partial<T>): Promise<void> {
-    if (this.documentReference === null) throw Error('This model does not have documentReference.')
-
-    return this.documentReference.update(data)
-  }
-
-  async delete(): Promise<void> {
-    if (this.documentReference === null) throw Error('This model does not have documentReference.')
-
-    return this.documentReference.delete()
+        : undefined
   }
 }
