@@ -1,6 +1,6 @@
 {
   "name": "active-firestore",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Firestore sdk which has ActiveRecord like syntax",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
