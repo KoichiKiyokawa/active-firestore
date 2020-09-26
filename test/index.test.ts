@@ -16,56 +16,60 @@ describe('firestore test', () => {
     await db.doc(`users/${userId}/posts/${postId}`).set(postSeedData)
   })
 
-  test('instantiate User', () => {
-    const user = new User(userId)
-    expect(user.props.collectionName).toBe('users')
-    expect(user.documentReference?.path).toBe(`users/${userId}`)
+  describe('User test', () => {
+    test('instantiate User', () => {
+      const user = new User(userId)
+      expect(user.props.collectionName).toBe('users')
+      expect(user.documentReference?.path).toBe(`users/${userId}`)
+    })
+
+    test('instantiate User (without id)', () => {
+      const user = new User()
+      expect(user.props.collectionName).toBe('users')
+      expect(user.collectionReference?.path).toBe('users')
+      expect(user.documentReference).toBeUndefined()
+    })
+
+    test('User.prototype.get', async () => {
+      const userData = await new User(userId).get()
+      expect(userData).toEqual({ ...userSeedData, id: userId })
+    })
+
+    let user2Id: string
+    const user2Data = { name: 'user2' }
+    test('User.prototype.add (add user2)', async () => {
+      user2Id = await new User(userId).add(user2Data)
+      expect(user2Id).toBeDefined()
+      const savedData = await db
+        .doc(`users/${user2Id}`)
+        .get()
+        .then((snap) => snap.data())
+      expect(savedData).toEqual(user2Data)
+    })
+
+    test('User.prototype.getAll', async () => {
+      const userData = await new User().getAll()
+      const byIdAsc = (userA: { id: string }, userB: { id: string }) => (userA.id < userB.id ? -1 : 1)
+      expect(userData).toEqual(
+        [
+          { ...user2Data, id: user2Id },
+          { ...userSeedData, id: userId },
+        ].sort(byIdAsc)
+      )
+    })
   })
 
-  test('instantiate User (without id)', () => {
-    const user = new User()
-    expect(user.props.collectionName).toBe('users')
-    expect(user.collectionReference?.path).toBe('users')
-    expect(user.documentReference).toBeNull()
-  })
+  describe('Post test', () => {
+    test('instantiate by new Post([userId], postId)', () => {
+      const post = new Post([userId], postId)
+      expect(post.props.collectionName).toBe('posts')
+      expect(post.documentReference?.path).toBe(`users/${userId}/posts/${postId}`)
+    })
 
-  test('User.prototype.get', async () => {
-    const userData = await new User(userId).get()
-    expect(userData).toEqual({ ...userSeedData, id: userId })
-  })
-
-  let user2Id: string
-  const user2Data = { name: 'user2' }
-  test('User.prototype.add (add user2)', async () => {
-    user2Id = await new User(userId).add(user2Data)
-    expect(user2Id).toBeDefined()
-    const savedData = await db
-      .doc(`users/${user2Id}`)
-      .get()
-      .then((snap) => snap.data())
-    expect(savedData).toEqual(user2Data)
-  })
-
-  test('User.prototype.getAll', async () => {
-    const userData = await new User().getAll()
-    const byIdAsc = (userA: { id: string }, userB: { id: string }) => (userA.id < userB.id ? -1 : 1)
-    expect(userData).toEqual(
-      [
-        { ...user2Data, id: user2Id },
-        { ...userSeedData, id: userId },
-      ].sort(byIdAsc)
-    )
-  })
-
-  test('instantiate by new Post([userId], postId)', () => {
-    const post = new Post([userId], postId)
-    expect(post.props.collectionName).toBe('posts')
-    expect(post.documentReference?.path).toBe(`users/${userId}/posts/${postId}`)
-  })
-
-  test('instantiate by new Post([userId])', () => {
-    const post = new Post([userId])
-    expect(post.props.collectionName).toBe('posts')
-    expect(post.collectionReference?.path).toBe(`users/${userId}/posts`)
+    test('instantiate by new Post([userId])', () => {
+      const post = new Post([userId])
+      expect(post.props.collectionName).toBe('posts')
+      expect(post.collectionReference?.path).toBe(`users/${userId}/posts`)
+    })
   })
 })
