@@ -1,7 +1,7 @@
 {
   "name": "active-firestore",
   "description": "Firestore sdk which has ActiveRecord like syntax",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "author": "K.Kiyokawa",
   "bugs": {
     "url": "https://github.com/KoichiKiyokawa/active-firestore/issues"
