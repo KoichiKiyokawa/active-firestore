@@ -13,20 +13,20 @@ export class BaseCrud<T extends Record<string, unknown>> {
     return { ...data, id: snap.id }
   }
 
-  async add(data: T): Promise<string> {
+  async create(data: T): Promise<string> {
     if (this.collectionReference == null) throw ERRORS.NO_COLLECTION_REFERENCE
 
     const addedDocumentReference = await this.collectionReference?.add(data)
     return addedDocumentReference.id
   }
 
-  async get(): Promise<WithId<T> | undefined> {
+  async find(): Promise<WithId<T> | undefined> {
     if (this.documentReference == null) throw ERRORS.NO_DOCUMENT_REFERENCE('Did you mean? getAll')
 
     return this.documentReference.get().then((snap) => this.mergeIdToSnap(snap))
   }
 
-  async getAll(): Promise<WithId<T>[]> {
+  async all(): Promise<WithId<T>[]> {
     if (this.collectionReference == null) throw Error()
 
     const snapshot = await this.collectionReference.get()
@@ -39,7 +39,7 @@ export class BaseCrud<T extends Record<string, unknown>> {
     return this.documentReference.update(data)
   }
 
-  async delete(): Promise<void> {
+  async destroy(): Promise<void> {
     if (this.documentReference == null) throw ERRORS.NO_DOCUMENT_REFERENCE()
 
     return this.documentReference.delete()

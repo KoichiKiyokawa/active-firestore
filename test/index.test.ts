@@ -31,14 +31,14 @@ describe('firestore test', () => {
     })
 
     test('User.prototype.get', async () => {
-      const userData = await new User(userId).get()
+      const userData = await new User(userId).find()
       expect(userData).toEqual({ ...userSeedData, id: userId })
     })
 
     let user2Id: string
     const user2Data = { name: 'user2' }
     test('User.prototype.add (add user2)', async () => {
-      user2Id = await new User(userId).add(user2Data)
+      user2Id = await new User(userId).create(user2Data)
       expect(user2Id).toBeDefined()
       const savedData = await db
         .doc(`users/${user2Id}`)
@@ -48,7 +48,7 @@ describe('firestore test', () => {
     })
 
     test('User.prototype.getAll', async () => {
-      const userData = await new User().getAll()
+      const userData = await new User().all()
       const byIdAsc = (userA: { id: string }, userB: { id: string }) => (userA.id < userB.id ? -1 : 1)
       expect(userData).toEqual(
         [
