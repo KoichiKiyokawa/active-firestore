@@ -12,3 +12,4 @@ Please see `test/models`.
 - [ ] CI
 - [ ] doc(en)
 - [ ] doc(ja)
+- [ ] doc(Why not `Post.find(postId)`)
