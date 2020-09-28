@@ -1,26 +1,10 @@
 {
   "name": "active-firestore",
-  "version": "0.2.0",
   "description": "Firestore sdk which has ActiveRecord like syntax",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "scripts": {
-    "lint": "eslint --fix --ext .ts src test",
-    "test": "jest --silent=false --verbose false",
-    "test:ci": "firebase emulators:exec --only firestore 'yarn test'",
-    "build": "tsc -d --outDir dist"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/KoichiKiyokawa/active-firestore.git"
-  },
+  "version": "0.2.0",
   "author": "K.Kiyokawa",
-  "license": "MIT",
   "bugs": {
     "url": "https://github.com/KoichiKiyokawa/active-firestore/issues"
-  },
-  "peerDependencies": {
-    "firebase": "^7.16.0"
   },
   "devDependencies": {
     "@firebase/testing": "^0.20.11",
@@ -36,5 +20,24 @@
     "prettier": "^2.1.1",
     "ts-jest": "^26.3.0",
     "typescript": "^4.0.3"
-  }
+  },
+  "files": [
+    "dist"
+  ],
+  "license": "MIT",
+  "main": "dist/index.js",
+  "peerDependencies": {
+    "firebase": "^7.16.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/KoichiKiyokawa/active-firestore.git"
+  },
+  "scripts": {
+    "build": "tsc -d --outDir dist",
+    "lint": "eslint --fix --ext .ts src test",
+    "test": "jest --silent=false --verbose false",
+    "test:ci": "firebase emulators:exec --only firestore 'yarn test'"
+  },
+  "types": "dist/index.d.ts"
 }
