@@ -1,4 +1,8 @@
 # active-firestore
+![](https://badgen.net/npm/v/active-firestore)
+![](https://badgen.net/bundlephobia/minzip/active-firestore)
+![](https://badgen.net/npm/dt/active-firestore)
+
 Firestore sdk which has ActiveRecord like syntax
 
 ## Example
