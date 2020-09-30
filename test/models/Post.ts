@@ -8,7 +8,7 @@ type TPost = {
 
 /**
  * @example
- * const postData = await new Post(userId, postId).get()
+ * const postData = await new Post(userId, postId).find()
  */
 export class Post extends Application<TPost> {
   get props(): typeof Application.prototype.props {
