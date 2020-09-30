@@ -49,7 +49,7 @@ describe('firestore test', () => {
       expect(savedData).toEqual(user2Data)
     })
 
-    test('User.prototype.all', async () => {
+    test('User.prototype.all (get user1 and user2)', async () => {
       const userData = await new User().all()
       const byIdAsc = (userA: { id: string }, userB: { id: string }) => (userA.id < userB.id ? -1 : 1)
       expect(userData).toEqual(
@@ -109,7 +109,7 @@ describe('firestore test', () => {
       expect(savedData).toEqual(post2Data)
     })
 
-    test('Post.prototype.all', async () => {
+    test('Post.prototype.all (get post1 and post2)', async () => {
       const userData = await new Post([userId]).all()
       const byIdAsc = (postA: { id: string }, postB: { id: string }) => (postA.id < postB.id ? -1 : 1)
       expect(userData).toEqual(
@@ -121,7 +121,7 @@ describe('firestore test', () => {
     })
 
     const postChangedData = { title: 'title1-changed', body: 'body1-changed' }
-    test('Post.prototype.update (rename user1)', async () => {
+    test('Post.prototype.update (rename post1)', async () => {
       const result = await new Post([userId], postId).update(postChangedData)
       expect(result).toBeUndefined()
 
