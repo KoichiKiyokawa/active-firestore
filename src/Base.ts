@@ -60,8 +60,8 @@ export class Base<T extends Data> extends BaseCrud<T> {
           return new this.combinedProps.parent(parentId).documentReference
         } else {
           // e.g. 2 new Comment([userId, postId]) or new Comment([userId, postId], commentId)
-          const grandParentIds = parentIdsOrThisId.slice(0, parentIdsOrThisId.length - 1) as [string, ...string[]]
-          const parentId = parentIdsOrThisId[parentIdsOrThisId.length]
+          const grandParentIds = parentIdsOrThisId.slice(0, -1) as [string, ...string[]]
+          const [parentId] = parentIdsOrThisId.slice(-1)
           return new this.combinedProps.parent(grandParentIds, parentId).documentReference
         }
       }
