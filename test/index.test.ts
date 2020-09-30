@@ -40,7 +40,7 @@ describe('firestore test', () => {
     let user2Id: string
     const user2Data = { name: 'user2' }
     test('User.prototype.create (add user2)', async () => {
-      user2Id = await new User(userId).create(user2Data)
+      user2Id = await new User().create(user2Data)
       expect(user2Id).toBeDefined()
       const savedData = await db
         .doc(`users/${user2Id}`)
@@ -59,6 +59,29 @@ describe('firestore test', () => {
         ].sort(byIdAsc)
       )
     })
+
+    const userRenamedData = { name: 'user1-renamed' }
+    test('User.prototype.update (rename user1)', async () => {
+      const result = await new User(userId).update(userRenamedData)
+      expect(result).toBeUndefined()
+
+      const updatedData = await db
+        .doc(`users/${userId}`)
+        .get()
+        .then((snap) => snap.data())
+      expect(updatedData).toEqual(userRenamedData)
+    })
+
+    test('User.prototype.delete (delete user2)', async () => {
+      const result = await new User(user2Id).destroy()
+      expect(result).toBeUndefined()
+
+      const usersData = await db
+        .collection('users')
+        .get()
+        .then((snap) => snap.docs.map((doc) => doc.data()))
+      expect(usersData).toEqual([userRenamedData])
+    })
   })
 
   describe('Post test', () => {
@@ -72,6 +95,53 @@ describe('firestore test', () => {
       const post = new Post([userId])
       expect(post.props.collectionName).toBe('posts')
       expect(post.collectionReference?.path).toBe(`users/${userId}/posts`)
+    })
+
+    let post2Id: string
+    const post2Data = { title: 'title2', body: 'body2' }
+    test('Post.prototype.create (add post2)', async () => {
+      post2Id = await new Post([userId]).create(post2Data)
+      expect(post2Id).toBeDefined()
+      const savedData = await db
+        .doc(`users/${userId}/posts/${post2Id}`)
+        .get()
+        .then((snap) => snap.data())
+      expect(savedData).toEqual(post2Data)
+    })
+
+    test('Post.prototype.all', async () => {
+      const userData = await new Post([userId]).all()
+      const byIdAsc = (postA: { id: string }, postB: { id: string }) => (postA.id < postB.id ? -1 : 1)
+      expect(userData).toEqual(
+        [
+          { ...post2Data, id: post2Id },
+          { ...postSeedData, id: postId },
+        ].sort(byIdAsc)
+      )
+    })
+
+    const postChangedData = { title: 'title1-changed', body: 'body1-changed' }
+    test('Post.prototype.update (rename user1)', async () => {
+      const result = await new Post([userId], postId).update(postChangedData)
+      expect(result).toBeUndefined()
+
+      const updatedData = await db
+        .doc(`users/${userId}/posts/${postId}`)
+        .get()
+        .then((snap) => snap.data())
+      expect(updatedData).toEqual(postChangedData)
+    })
+
+    test('Post.prototype.delete (delete post2)', async () => {
+      const result = await new Post([userId], post2Id).destroy()
+      expect(result).toBeUndefined()
+
+      const postsData = await db
+        .doc(`users/${userId}`)
+        .collection('posts')
+        .get()
+        .then((snap) => snap.docs.map((doc) => doc.data()))
+      expect(postsData).toEqual([postChangedData])
     })
   })
 
