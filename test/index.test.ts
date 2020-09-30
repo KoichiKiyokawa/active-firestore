@@ -1,12 +1,14 @@
 import * as firebase from '@firebase/testing'
 import { User } from './models/User'
 import { Post } from './models/Post'
+import { Comment } from './models/Comment'
 import { firebaseConfig } from './plugins/firebase'
 import { db } from './plugins/firebase'
 
 describe('firestore test', () => {
   const userId = 'USER_ID'
   const postId = 'POST_ID'
+  const commentId = 'COMMENT_ID'
 
   const userSeedData = { name: 'user1' }
   const postSeedData = { title: 'title1', body: 'body1' }
@@ -37,7 +39,7 @@ describe('firestore test', () => {
 
     let user2Id: string
     const user2Data = { name: 'user2' }
-    test('User.prototype.add (add user2)', async () => {
+    test('User.prototype.create (add user2)', async () => {
       user2Id = await new User(userId).create(user2Data)
       expect(user2Id).toBeDefined()
       const savedData = await db
@@ -47,7 +49,7 @@ describe('firestore test', () => {
       expect(savedData).toEqual(user2Data)
     })
 
-    test('User.prototype.getAll', async () => {
+    test('User.prototype.all', async () => {
       const userData = await new User().all()
       const byIdAsc = (userA: { id: string }, userB: { id: string }) => (userA.id < userB.id ? -1 : 1)
       expect(userData).toEqual(
@@ -70,6 +72,20 @@ describe('firestore test', () => {
       const post = new Post([userId])
       expect(post.props.collectionName).toBe('posts')
       expect(post.collectionReference?.path).toBe(`users/${userId}/posts`)
+    })
+  })
+
+  describe('Comment test', () => {
+    test('instantiate by new Comment([userId, postId], commentId)', () => {
+      const comment = new Comment([userId, postId], commentId)
+      expect(comment.props.collectionName).toBe('comments')
+      expect(comment.documentReference?.path).toBe(`users/${userId}/posts/${postId}/comments/${commentId}`)
+    })
+
+    test('instantiate by new Comment([userId, postId])', () => {
+      const comment = new Comment([userId, postId])
+      expect(comment.props.collectionName).toBe('comments')
+      expect(comment.collectionReference?.path).toBe(`users/${userId}/posts/${postId}/comments`)
     })
   })
 })
