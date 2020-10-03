@@ -1,9 +1,9 @@
 # active-firestore
 ![CI](https://github.com/KoichiKiyokawa/active-firestore/workflows/CI/badge.svg?branch=master)
 [![codecov](https://codecov.io/gh/KoichiKiyokawa/active-firestore/branch/master/graph/badge.svg?token=EVDB1JVVHJ)](undefined)
-![](https://badgen.net/npm/v/active-firestore)
-![](https://badgen.net/bundlephobia/minzip/active-firestore)
-![](https://badgen.net/npm/dt/active-firestore)
+![](https://badgen.net/npm/v/active-firestore?cache=300)
+![](https://badgen.net/bundlephobia/minzip/active-firestore?cache=300)
+![](https://badgen.net/npm/dt/active-firestore?cache=300)
 
 Firestore sdk which has ActiveRecord like syntax
 
@@ -17,11 +17,14 @@ Firestore sdk which has ActiveRecord like syntax
 
 ## Usage
 1. Install this npm package:
+
 ```shell
 yarn add active-firestore
 # or npm intall active-firestore
 ```
+
 2. [Initialize](https://firebase.google.com/docs/web/setup#add-sdks-initialize) your Firebase SDK
+
 ```ts
 /* src/plugins/firestore.ts */
 import * as firebase from 'firebase/app'
@@ -35,7 +38,9 @@ const firebaseConfig = {
 if (firebase.apps.length === 0) firebase.initializeApp(firebaseConfig)
 export const db = firebase.firestore() 
 ```
+
 3. Add Application model to your project.
+
 ```ts
 /* src/models/Application.ts */
 import { Base } from 'active-firestore'
@@ -47,7 +52,8 @@ export class Application<T extends Record<string, unknown>> extends Base<T> {
   }
 }
 ```
-4. Set model files depending on your firestore design.
+
+4. Set model files depending on your firestore design.  
 For example,
 - **root collection: users**
   - name: string
@@ -93,6 +99,7 @@ export class Post extends Application<TPost> {
 ```
 
 5. 🎉 Let's get data with simple API.
+
 ```ts
 /* src/index.ts */
 import { User } from '../models/User'
