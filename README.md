@@ -16,14 +16,14 @@ Firestore sdk which has ActiveRecord like syntax
 - 📚 Usable in nested collections
 
 ## Usage
-1. Install this npm package:
+### 1. Install this npm package:
 
 ```shell
 yarn add active-firestore
 # or npm intall active-firestore
 ```
 
-2. [Initialize](https://firebase.google.com/docs/web/setup#add-sdks-initialize) your Firebase SDK
+### 2. [Initialize](https://firebase.google.com/docs/web/setup#add-sdks-initialize) your Firebase SDK
 
 ```ts
 /* src/plugins/firestore.ts */
@@ -39,7 +39,7 @@ if (firebase.apps.length === 0) firebase.initializeApp(firebaseConfig)
 export const db = firebase.firestore() 
 ```
 
-3. Add Application model to your project.
+### 3. Add Application model to your project.
 
 ```ts
 /* src/models/Application.ts */
@@ -53,7 +53,7 @@ export class Application<T extends Record<string, unknown>> extends Base<T> {
 }
 ```
 
-4. Set model files depending on your firestore design.  
+### 4. Set model files depending on your firestore design.
 For example,
 - **root collection: users**
   - name: string
@@ -98,7 +98,7 @@ export class Post extends Application<TPost> {
 }
 ```
 
-5. 🎉 Let's get data with simple API.
+### 5. 🎉 Let's get data with simple API.
 
 ```ts
 /* src/index.ts */
