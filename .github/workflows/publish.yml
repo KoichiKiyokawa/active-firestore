@@ -1,11 +1,9 @@
-name: CI
+name: publish
 
 on:
   push:
-    branches:
-      - master
-    paths-ignore:
-      - '*.md'
+    tags:
+      - 'v*'
 
 jobs:
   build:
@@ -15,9 +13,10 @@ jobs:
       - uses: actions/setup-node@v2.1.2
         with:
           node-version: 14.x
+          registry-url: 'https://registry.npmjs.org'
       - name: install dependencies
         run: yarn install --flozen-lockfile
-      - name: test
-        run: yarn test:ci
-      - name: Codecov Node
-        run: bash <(curl -s https://codecov.io/bash)
+      - name: build & publish
+        run: yarn build && yarn publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
