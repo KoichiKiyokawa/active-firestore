@@ -103,11 +103,11 @@ const userDAO = new User(userId)
 // Create
 await userDAO.create({ name: 'user1' })
 // Read
-const userData = await userDAO(userId).find()
+const userData = await userDAO.find()
 // Update
-await userDAO(userId).update({ name: 'user1-renamed' })
+await userDAO.update({ name: 'user1-renamed' })
 // Delete
-await userDAO(userId).destroy()
+await userDAO.destroy()
 
 const postId = 'POST_ID'
 const postDAO = new Post([userId], postId) // Path parent documentID in array
