@@ -10,15 +10,12 @@ describe('firestore test', () => {
   const postId = 'POST_ID'
   const commentId = 'COMMENT_ID'
 
-  const userSeedData = { name: 'user1' }
-  const postSeedData = { title: 'title1', body: 'body1' }
-  beforeAll(async () => {
-    await firebase.clearFirestoreData(firebaseConfig)
-    await db.doc(`users/${userId}`).set(userSeedData)
-    await db.doc(`users/${userId}/posts/${postId}`).set(postSeedData)
-  })
-
   describe('User test', () => {
+    const userSeedData = { name: 'user1' }
+    beforeAll(async () => {
+      await firebase.clearFirestoreData(firebaseConfig)
+      await db.doc(`users/${userId}`).set(userSeedData)
+    })
     test('instantiate User', () => {
       const user = new User(userId)
       expect(user.props.collectionName).toBe('users')
@@ -85,6 +82,10 @@ describe('firestore test', () => {
   })
 
   describe('Post test', () => {
+    const postSeedData = { title: 'title1', body: 'body1' }
+    beforeAll(async () => {
+      await db.doc(`users/${userId}/posts/${postId}`).set(postSeedData)
+    })
     test('instantiate by new Post([userId], postId)', () => {
       const post = new Post([userId], postId)
       expect(post.props.collectionName).toBe('posts')
@@ -146,6 +147,10 @@ describe('firestore test', () => {
   })
 
   describe('Comment test', () => {
+    const commentSeedData = { text: 'comment1' }
+    beforeAll(async () => {
+      await db.doc(`users/${userId}/posts/${postId}/comments/${commentId}`).set(commentSeedData)
+    })
     test('instantiate by new Comment([userId, postId], commentId)', () => {
       const comment = new Comment([userId, postId], commentId)
       expect(comment.props.collectionName).toBe('comments')
@@ -156,6 +161,53 @@ describe('firestore test', () => {
       const comment = new Comment([userId, postId])
       expect(comment.props.collectionName).toBe('comments')
       expect(comment.collectionReference?.path).toBe(`users/${userId}/posts/${postId}/comments`)
+    })
+
+    let comment2Id: string
+    const comment2Data = { text: 'comment2' }
+    test('Comment.prototype.create (add comment2)', async () => {
+      comment2Id = await new Comment([userId, postId]).create(comment2Data)
+      expect(comment2Id).toBeDefined()
+      const savedData = await db
+        .doc(`users/${userId}/posts/${postId}/comments/${comment2Id}`)
+        .get()
+        .then((snap) => snap.data())
+      expect(savedData).toEqual(comment2Data)
+    })
+
+    test('Comment.prototype.all (get comment1 and comment2)', async () => {
+      const userData = await new Comment([userId, postId], commentId).all()
+      const byIdAsc = (commentA: { id: string }, commentB: { id: string }) => (commentA.id < commentB.id ? -1 : 1)
+      expect(userData).toEqual(
+        [
+          { ...comment2Data, id: comment2Id },
+          { ...commentSeedData, id: commentId },
+        ].sort(byIdAsc)
+      )
+    })
+
+    const commentChangedData = { text: 'comment1-changed' }
+    test('Comment.prototype.update (rename comment1)', async () => {
+      const result = await new Comment([userId, postId], commentId).update(commentChangedData)
+      expect(result).toBeUndefined()
+
+      const updatedData = await db
+        .doc(`users/${userId}/posts/${postId}/comments/${commentId}`)
+        .get()
+        .then((snap) => snap.data())
+      expect(updatedData).toEqual(commentChangedData)
+    })
+
+    test('Comment.prototype.delete (delete comment2)', async () => {
+      const result = await new Comment([userId, postId], comment2Id).destroy()
+      expect(result).toBeUndefined()
+
+      const commentsData = await db
+        .doc(`users/${userId}/posts/${postId}`)
+        .collection('comments')
+        .get()
+        .then((snap) => snap.docs.map((doc) => doc.data()))
+      expect(commentsData).toEqual([commentChangedData])
     })
   })
 })
