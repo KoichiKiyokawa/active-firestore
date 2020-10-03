@@ -37,7 +37,7 @@
     "build": "tsc -d --outDir dist",
     "lint": "eslint --fix --ext .ts src test",
     "test": "jest --silent=false --verbose false",
-    "test:ci": "firebase emulators:exec --only firestore 'yarn test'"
+    "test:ci": "firebase emulators:exec --only firestore 'yarn test --coverage'"
   },
   "types": "dist/index.d.ts"
 }
