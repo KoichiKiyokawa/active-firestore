@@ -1,4 +1,4 @@
-import { firestore } from '@firebase/rules-unit-testing'
+import { firestore } from 'firebase/app'
 import { ERRORS } from './errors'
 
 type WithId<T> = T & { id: string }
