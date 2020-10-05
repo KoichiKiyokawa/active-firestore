@@ -5,6 +5,8 @@ import { Comment } from './models/Comment'
 import { firebaseConfig } from './plugins/firebase'
 import { db } from './plugins/firebase'
 
+const byIdAsc = (dataA: { id: string }, dataB: { id: string }) => (dataA.id < dataB.id ? -1 : 1)
+
 describe('firestore test', () => {
   const userId = 'USER_ID'
   const postId = 'POST_ID'
@@ -46,15 +48,37 @@ describe('firestore test', () => {
       expect(savedData).toEqual(user2Data)
     })
 
-    test('User.prototype.all (get user1 and user2)', async () => {
+    const user3Id = 'USER_ID3'
+    const user3Data = { name: 'user3' }
+    test('User.prototype.create (add user3 with ID)', async () => {
+      const returnedID = await new User().create({ ...user3Data, id: user3Id })
+      expect(returnedID).toBe(user3Id)
+      const savedData = await db
+        .doc(`users/${user3Id}`)
+        .get()
+        .then((snap) => snap.data())
+      expect(savedData).toEqual(user3Data)
+    })
+
+    test('User.prototype.all (get user1, user2 and user3)', async () => {
       const userData = await new User().all()
-      const byIdAsc = (userA: { id: string }, userB: { id: string }) => (userA.id < userB.id ? -1 : 1)
       expect(userData).toEqual(
         [
           { ...user2Data, id: user2Id },
+          { ...user3Data, id: user3Id },
           { ...userSeedData, id: userId },
         ].sort(byIdAsc)
       )
+    })
+
+    test('User.prototype.all (with limit)', async () => {
+      const userData = await new User().all({ limit: 1 })
+      expect([
+        { ...user2Data, id: user2Id },
+        { ...user3Data, id: user3Id },
+        { ...userSeedData, id: userId },
+      ]).toEqual(expect.arrayContaining(userData))
+      expect(userData).toHaveLength(1)
     })
 
     const userRenamedData = { name: 'user1-renamed' }
@@ -77,7 +101,7 @@ describe('firestore test', () => {
         .collection('users')
         .get()
         .then((snap) => snap.docs.map((doc) => doc.data()))
-      expect(usersData).toEqual([userRenamedData])
+      expect(usersData).toEqual([userRenamedData, user3Data])
     })
   })
 
@@ -111,14 +135,22 @@ describe('firestore test', () => {
     })
 
     test('Post.prototype.all (get post1 and post2)', async () => {
-      const userData = await new Post([userId]).all()
-      const byIdAsc = (postA: { id: string }, postB: { id: string }) => (postA.id < postB.id ? -1 : 1)
-      expect(userData).toEqual(
+      const postData = await new Post([userId]).all()
+      expect(postData).toEqual(
         [
           { ...post2Data, id: post2Id },
           { ...postSeedData, id: postId },
         ].sort(byIdAsc)
       )
+    })
+
+    test('Post.prototype.all (with limit)', async () => {
+      const postData = await new Post([userId]).all({ limit: 1 })
+      expect([
+        { ...post2Data, id: post2Id },
+        { ...postSeedData, id: postId },
+      ]).toEqual(expect.arrayContaining(postData))
+      expect(postData).toHaveLength(1)
     })
 
     const postChangedData = { title: 'title1-changed', body: 'body1-changed' }
@@ -177,13 +209,21 @@ describe('firestore test', () => {
 
     test('Comment.prototype.all (get comment1 and comment2)', async () => {
       const userData = await new Comment([userId, postId], commentId).all()
-      const byIdAsc = (commentA: { id: string }, commentB: { id: string }) => (commentA.id < commentB.id ? -1 : 1)
       expect(userData).toEqual(
         [
           { ...comment2Data, id: comment2Id },
           { ...commentSeedData, id: commentId },
         ].sort(byIdAsc)
       )
+    })
+
+    test('Comment.prototype.all (with limit)', async () => {
+      const commentData = await new Comment([userId, postId], commentId).all({ limit: 1 })
+      expect([
+        { ...comment2Data, id: comment2Id },
+        { ...commentSeedData, id: commentId },
+      ]).toEqual(expect.arrayContaining(commentData))
+      expect(commentData).toHaveLength(1)
     })
 
     const commentChangedData = { text: 'comment1-changed' }
