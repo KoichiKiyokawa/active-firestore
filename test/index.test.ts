@@ -1,4 +1,4 @@
-import * as firebase from '@firebase/testing'
+import * as firebase from '@firebase/rules-unit-testing'
 import { User } from './models/User'
 import { Post } from './models/Post'
 import { Comment } from './models/Comment'
