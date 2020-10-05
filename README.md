@@ -27,7 +27,7 @@ yarn add active-firestore
 
 ```ts
 /* src/plugins/firestore.ts */
-import * as firebase from 'firebase/app'
+import firebase from 'firebase/app'
 import 'firebase/firestore'
 
 // TODO: Replace the following with your app's Firebase project configuration
@@ -37,6 +37,15 @@ const firebaseConfig = {
 
 if (firebase.apps.length === 0) firebase.initializeApp(firebaseConfig)
 export const db = firebase.firestore() 
+```
+
+#### *NOTE:* if you use [firebase-admin](https://firebase.google.com/docs/admin/setup), you should install a `firebase` package and initialize as below
+```ts
+import admin from "firebase-admin";
+import { firestore } from 'firebase/app' // for type assertion
+
+if (admin.apps.length === 0) admin.initializeApp();
+const db = (admin.firestore() as unknown) as firestore.Firestore;
 ```
 
 ### 3. Add Application model to your project.
