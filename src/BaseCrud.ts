@@ -26,10 +26,10 @@ export class BaseCrud<T extends Record<string, unknown>> {
     return this.documentReference.get().then((snap) => this.mergeIdToSnap(snap))
   }
 
-  async all(): Promise<WithId<T>[]> {
+  async all(arg?: { limit: number }): Promise<WithId<T>[]> {
     if (this.collectionReference == null) throw Error()
 
-    const snapshot = await this.collectionReference.get()
+    const snapshot = await (arg ? this.collectionReference.limit(arg.limit) : this.collectionReference).get()
     return snapshot.docs.flatMap((doc) => this.mergeIdToSnap(doc) ?? [])
   }
 
