@@ -117,9 +117,15 @@ import { Post } from '../models/Post'
 const userId = 'USER_ID'
 const userDAO = new User(userId)
 // Create
-await userDAO.create({ name: 'user1' })
+await userDAO.create({ name: 'user1' }) // or await new User().create({ name: 'user1' })
+// Create with ID
+await userDAO.create({ name: 'user1', id: 'USER_1' }) // firestore documentID will be `USER_1`
 // Read
 const userData = await userDAO.find()
+// Read all
+const usersData = await userDAO.all() // or await new User().all()
+// Read all (limit 10)
+const usersDataWithLimit = await userDAO.all({ limit: 10 }) // or await new User().all({ limit: 10 })
 // Update
 await userDAO.update({ name: 'user1-renamed' })
 // Delete
@@ -128,7 +134,7 @@ await userDAO.destroy()
 const postId = 'POST_ID'
 const postDAO = new Post([userId], postId) // Path parent documentID in array
 // Create
-await postDAO.create({ title: 'title1', body: 'body1' })
+await postDAO.create({ title: 'title1', body: 'body1' }) // or await new Post([userId]).create({ title: 'title1', body: 'body1' })
 // Read
 const postData = await postDAO.find()
 // Update
