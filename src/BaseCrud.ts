@@ -13,10 +13,19 @@ export class BaseCrud<T extends Record<string, unknown>> {
     return { ...data, id: snap.id }
   }
 
-  async create(data: T): Promise<string> {
+  /**
+   * @return {Promise<string>} id
+   */
+  async create(data: T & { id?: string }): Promise<string> {
     if (this.collectionReference == null) throw ERRORS.NO_COLLECTION_REFERENCE
 
-    const addedDocumentReference = await this.collectionReference?.add(data)
+    const { id, ...addData } = data
+    if (id) {
+      await this.collectionReference.doc(id).set(addData as T)
+      return id
+    }
+
+    const addedDocumentReference = await this.collectionReference.add(addData as T)
     return addedDocumentReference.id
   }
 
