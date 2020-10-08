@@ -14,6 +14,7 @@ Firestore sdk which has ActiveRecord like syntax
 - 💪 Type strong(Written in TypeScript)
 - 🔧 Customizable(You can add any methods you want)
 - 📚 Usable in nested collections
+- 🕒 Convert `firestore.Timestamp` to `Date` automatically
 
 ## Usage
 ### 1. Install this npm package:
