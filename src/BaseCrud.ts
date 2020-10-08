@@ -7,12 +7,6 @@ export class BaseCrud<T extends Record<string, unknown>> {
   collectionReference?: firestore.CollectionReference<T>
   documentReference?: firestore.DocumentReference<T>
 
-  private mergeIdToSnap(snap: firestore.DocumentSnapshot<T>) {
-    const data = snap.data()
-    if (!data) return undefined
-    return { ...data, id: snap.id }
-  }
-
   /**
    * @return {Promise<string>} id
    */
@@ -32,14 +26,16 @@ export class BaseCrud<T extends Record<string, unknown>> {
   async find(): Promise<WithId<T> | undefined> {
     if (this.documentReference == null) throw ERRORS.NO_DOCUMENT_REFERENCE('Did you mean? getAll')
 
-    return this.documentReference.get().then((snap) => this.mergeIdToSnap(snap))
+    const snap = await this.documentReference.get()
+    const data = this.mergeIdToSnap(snap)
+    return this.convertFromDbData(data)
   }
 
   async all(arg?: { limit: number }): Promise<WithId<T>[]> {
     if (this.collectionReference == null) throw Error()
 
     const snapshot = await (arg ? this.collectionReference.limit(arg.limit) : this.collectionReference).get()
-    return snapshot.docs.flatMap((doc) => this.mergeIdToSnap(doc) ?? [])
+    return snapshot.docs.flatMap((doc) => this.convertFromDbData(this.mergeIdToSnap(doc)) ?? [])
   }
 
   async update(data: Partial<T>): Promise<void> {
@@ -53,4 +49,33 @@ export class BaseCrud<T extends Record<string, unknown>> {
 
     return this.documentReference.delete()
   }
+
+  private mergeIdToSnap(snap: firestore.DocumentSnapshot<T>) {
+    const data = snap.data()
+    if (!data) return undefined
+    return { ...data, id: snap.id }
+  }
+
+  private convertFromDbData(data: Record<string, unknown> | undefined): WithId<T> | undefined {
+    if (!data) return undefined
+
+    return Object.fromEntries(
+      Object.entries(data).map(([key, val]) => {
+        if (val instanceof firestore.Timestamp) return [key, val.toDate()]
+        else if (Array.isArray(val))
+          return [
+            key,
+            val.map((v) =>
+              v instanceof firestore.Timestamp ? v.toDate() : isObject(v) ? this.convertFromDbData(v) : v
+            ),
+          ]
+        else if (isObject(val)) return [key, this.convertFromDbData(val)]
+        else return [key, val]
+      })
+    ) as WithId<T>
+  }
 }
+
+// cf) https://qiita.com/suin/items/e8cf3404161cc90821d8
+const isObject = (x: unknown): x is Record<string, unknown> =>
+  x !== null && (typeof x === 'object' || typeof x === 'function')

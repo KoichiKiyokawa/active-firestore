@@ -2,12 +2,13 @@ import * as firebase from '@firebase/rules-unit-testing'
 import { User } from './models/User'
 import { Post } from './models/Post'
 import { Comment } from './models/Comment'
+import { Nested } from './models/Nested'
 import { firebaseConfig } from './plugins/firebase'
 import { db } from './plugins/firebase'
 
 const byIdAsc = (dataA: { id: string }, dataB: { id: string }) => (dataA.id < dataB.id ? -1 : 1)
 
-describe('firestore test', () => {
+describe('firestore CRUD test', () => {
   const userId = 'USER_ID'
   const postId = 'POST_ID'
   const commentId = 'COMMENT_ID'
@@ -249,5 +250,23 @@ describe('firestore test', () => {
         .then((snap) => snap.docs.map((doc) => doc.data()))
       expect(commentsData).toEqual([commentChangedData])
     })
+  })
+})
+
+describe('Timestamp => Date converter test', () => {
+  const postedAt = new Date()
+  const nestedDate = new Date()
+  let id: string
+  const data = {
+    users: [{ posts: [{ postedAt, obj1: { obj2: { obj3: { date: nestedDate } } } }] }],
+  }
+  beforeAll(async () => {
+    await firebase.clearFirestoreData(firebaseConfig)
+    id = await new Nested().create(data)
+  })
+
+  test('can convert when find()', async () => {
+    const foundData = await new Nested(id).find()
+    expect(foundData).toEqual({ ...data, id })
   })
 })
