@@ -53,10 +53,10 @@ const db = (admin.firestore() as unknown) as firestore.Firestore;
 
 ```ts
 /* src/models/Application.ts */
-import { Base } from 'active-firestore'
+import { Base, BaseObject } from 'active-firestore'
 import { db } from '../plugins/firebase'
 
-export class Application<T extends Record<string, unknown>> extends Base<T> {
+export class Application<T extends BaseObject> extends Base<T> {
   get baseProps(): typeof Base.prototype.props {
     return { db }
   }

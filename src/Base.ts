@@ -1,15 +1,15 @@
 import { firestore } from 'firebase/app'
-import { BaseCrud } from './BaseCrud'
+import { BaseRepository } from './BaseRepository'
 import { ERRORS } from './errors'
+import { BaseObject } from './types'
 
-type Data = Record<string, unknown>
 type BaseProps = {
   collectionName?: string
-  parent?: new (parentIdsOrThisId?: string | [string, ...string[]], id?: string) => Base<Data>
+  parent?: new (parentIdsOrThisId?: string | [string, ...string[]], id?: string) => Base<BaseObject>
   db?: firestore.Firestore
 }
 
-export class Base<T extends Data> extends BaseCrud<T> {
+export class Base<T extends BaseObject> extends BaseRepository<T> {
   get baseProps(): BaseProps {
     return {}
   }
@@ -25,7 +25,7 @@ export class Base<T extends Data> extends BaseCrud<T> {
     if (this.combinedProps.db === undefined) throw Error('db does not assigned')
     if (this.combinedProps.collectionName === undefined) throw Error('collectionName has not set')
 
-    const parentDocumentRef: firestore.Firestore | firestore.DocumentReference<Data> | undefined = (() => {
+    const parentDocumentRef: firestore.Firestore | firestore.DocumentReference<BaseObject> | undefined = (() => {
       /**
        * parentIdsOrThisId: 3 patterns (undefined, string, [string, ...string[]])
        *                         x

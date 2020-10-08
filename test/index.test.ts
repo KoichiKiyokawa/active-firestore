@@ -270,3 +270,40 @@ describe('Timestamp => Date converter test', () => {
     expect(foundData).toEqual({ ...data, id })
   })
 })
+
+describe('Query test', () => {
+  beforeAll(async () => {
+    await firebase.clearFirestoreData(firebaseConfig)
+    await Promise.all([1, 2, 3].map((i) => db.doc(`users/USER_ID${i}`).set({ name: `user${i}` })))
+  })
+
+  test('limit', async () => {
+    const users = await new User().limit(2).get()
+    expect(users).toEqual([
+      { id: 'USER_ID1', name: 'user1' },
+      { id: 'USER_ID2', name: 'user2' },
+    ])
+  })
+
+  test('limitToLast', async () => {
+    const users = await new User().orderBy('name').limitToLast(2).get()
+    expect(users).toEqual([
+      { id: 'USER_ID2', name: 'user2' },
+      { id: 'USER_ID3', name: 'user3' },
+    ])
+  })
+
+  test('orderBy', async () => {
+    const users = await new User().orderBy('name', 'desc').get()
+    expect(users).toEqual([
+      { id: 'USER_ID3', name: 'user3' },
+      { id: 'USER_ID2', name: 'user2' },
+      { id: 'USER_ID1', name: 'user1' },
+    ])
+  })
+
+  test('where', async () => {
+    const users = await new User().where('name', '==', 'user2').get()
+    expect(users).toEqual([{ id: 'USER_ID2', name: 'user2' }])
+  })
+})
