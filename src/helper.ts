@@ -1,4 +1,4 @@
-import { firestore } from 'firebase'
+import { firestore } from 'firebase/app'
 import { BaseObject, WithId } from './types'
 
 export function mergeIdFromSnap<T>(snap: firestore.DocumentSnapshot<T>): WithId<T> | undefined {

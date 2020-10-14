@@ -20,9 +20,10 @@ export class Base<T extends BaseObject> extends BaseRepository<T> {
     return { ...this.baseProps, ...this.props }
   }
 
-  constructor(parentIdsOrThisId?: string | [string, ...string[]], id?: string) {
+  constructor(parentIdsOrThisId?: string | [string, ...string[]], id?: string, _db?: firestore.Firestore) {
     super()
-    if (this.combinedProps.db === undefined) throw Error('db does not assigned')
+    const db = this.combinedProps.db ?? _db
+    if (db === undefined) throw Error('db does not assigned')
     if (this.combinedProps.collectionName === undefined) throw Error('collectionName has not set')
 
     const parentDocumentRef: firestore.Firestore | firestore.DocumentReference<BaseObject> | undefined = (() => {
@@ -36,7 +37,7 @@ export class Base<T extends BaseObject> extends BaseRepository<T> {
       if (parentIdsOrThisId === undefined) {
         if (id === undefined) {
           // e.g. new User()
-          return this.combinedProps.db
+          return db
         } else if (typeof id === 'string') {
           // e.g. new User(undefined, userId)
           throw ERRORS.INVALID_ARGS()
@@ -44,7 +45,7 @@ export class Base<T extends BaseObject> extends BaseRepository<T> {
       } else if (typeof parentIdsOrThisId === 'string') {
         if (id === undefined) {
           // e.g. new User(userId)
-          return this.combinedProps.db
+          return db
         } else if (typeof id === 'string') {
           // e.g. new Post(userId, postId)
           throw ERRORS.INVALID_ARGS()
