@@ -5,7 +5,8 @@ import { BaseObject } from './types'
 
 type BaseProps = {
   collectionName?: string
-  parent?: new (parentIdsOrThisId?: string | [string, ...string[]], id?: string) => Base<BaseObject>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  parent?: new (...arg: any) => Base<BaseObject>
   db?: firestore.Firestore
 }
 
